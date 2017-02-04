@@ -68,8 +68,7 @@ uint8_t tmpPayload[PAYLOAD_BUF_LEN];	//tx_N() => tx_cmd()
 uint8_t cmdCode = 0, cmdType = 0;
 uint16_t cmdLen = 0;
 
-//MsgQueue packet_queue;
-PacketWrapper pwPackAndSend;
+MsgQueue packet_queue;
 
 //****************************************************************************
 // Function(s)
@@ -184,8 +183,14 @@ void packAndSend(uint8_t *shBuf, uint8_t cmd, uint8_t cmdType, uint16_t len, \
 {
 	uint16_t numb = 0;
 
+	//Send to master:
+	PacketWrapper* p = fm_pool_allocate_block();
+	if (p == NULL)
+		return;
+
 	pack(shBuf, cmd, cmdType, len, rid, info, &numb, comm_str_1);
 
+	p->port = info[0];
 	if(ms == SEND_TO_SLAVE)
 	{
 		/*
