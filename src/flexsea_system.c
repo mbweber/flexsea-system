@@ -101,7 +101,7 @@ void init_flexsea_payload_ptr(void)
 	//Tools:
 	init_flexsea_payload_ptr_tools();
 
-	init_flexsea_payload_ptr_calibration();
+	//init_flexsea_payload_ptr_calibration();
 
 	//User functions:
 	init_flexsea_payload_ptr_user();
