@@ -41,7 +41,7 @@ extern "C" {
 //****************************************************************************
 
 #include "flexsea_board.h"
-#include "../flexsea-comm/inc/flexsea.h"
+#include "flexsea.h"
 //Include the core flexsea-system files:
 #include "flexsea_global_structs.h"
 #include "flexsea_cmd_control.h"
@@ -51,7 +51,7 @@ extern "C" {
 #include "flexsea_cmd_tools.h"
 #include <fm_block_allocator.h>
 //Include the user files:
-#include "../flexsea-user/inc/flexsea_cmd_user.h"
+#include "flexsea_cmd_user.h"
 
 //****************************************************************************
 // Prototype(s):
