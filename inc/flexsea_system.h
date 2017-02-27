@@ -49,7 +49,9 @@ extern "C" {
 #include "flexsea_cmd_external.h"
 #include "flexsea_cmd_data.h"
 #include "flexsea_cmd_tools.h"
+#if (defined BOARD_TYPE_FLEXSEA_MANAGE || defined BOARD_TYPE_FLEXSEA_EXECUTE)
 #include <fm_block_allocator.h>
+#endif
 //Include the user files:
 #include "../flexsea-user/inc/flexsea_cmd_user.h"
 
@@ -248,7 +250,9 @@ extern uint8_t tmpPayload[PAYLOAD_BUF_LEN];	//tx_N() => tx_cmd()
 //Similarly, we exchange command code, type and length:
 extern uint8_t cmdCode, cmdType;
 extern uint16_t cmdLen;
+#if (defined BOARD_TYPE_FLEXSEA_MANAGE || defined BOARD_TYPE_FLEXSEA_EXECUTE)
 extern MsgQueue packet_queue;
+#endif
 
 //Structures and shared variables are now in:
 #include "flexsea_global_structs.h"
