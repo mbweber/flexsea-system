@@ -69,6 +69,7 @@ uint8_t cmdCode = 0, cmdType = 0;
 uint16_t cmdLen = 0;
 
 MsgQueue packet_queue;
+PacketWrapper pwPackAndSend;
 
 //****************************************************************************
 // Function(s)
@@ -102,10 +103,12 @@ void init_flexsea_payload_ptr(void)
 	//Data:
 	init_flexsea_payload_ptr_data();
 
+	/*
 	//Memory Pool and Message Queues
 	fm_pool_init();
 	fm_queue_init(&packet_queue, 10);
 	fm_queue_init(&unpacked_packet_queue, 10);
+	*/
 
 	//Sensors:
 	init_flexsea_payload_ptr_sensors();
@@ -185,14 +188,16 @@ void packAndSend(uint8_t *shBuf, uint8_t cmd, uint8_t cmdType, uint16_t len, \
 
 	if(ms == SEND_TO_SLAVE)
 	{
+		/*
 		PacketWrapper* p = fm_pool_allocate_block();
 		if (p == NULL)
 			return;
-
 		p->port = info[0];
+		*/
 
-		memcpy(p->packed, comm_str_1, numb);
-		flexsea_send_serial_slave(p);
+		pwPackAndSend.port = info[0];
+		memcpy(pwPackAndSend.packed, comm_str_1, numb);
+		flexsea_send_serial_slave(&pwPackAndSend);
 	}
 	else
 	{
@@ -200,12 +205,14 @@ void packAndSend(uint8_t *shBuf, uint8_t cmd, uint8_t cmdType, uint16_t len, \
 		PacketWrapper* p = fm_pool_allocate_block();
 		if (p == NULL)
 			return;
-		*/
+
 		PacketWrapper p;
 		p.port = info[0];	//ToDo might be wrong... enum??
+		*/
 
-		memcpy(p.packed, comm_str_1, numb);
-		flexsea_send_serial_master(&p);
+		pwPackAndSend.port = info[0];
+		memcpy(pwPackAndSend.packed, comm_str_1, numb);
+		flexsea_send_serial_master(&pwPackAndSend);
 	}
 }
 
