@@ -68,6 +68,7 @@ uint8_t tmpPayload[PAYLOAD_BUF_LEN];	//tx_N() => tx_cmd()
 uint8_t cmdCode = 0, cmdType = 0;
 uint16_t cmdLen = 0;
 
+
 MsgQueue packet_queue;
 
 //****************************************************************************
@@ -182,7 +183,7 @@ void packAndSend(uint8_t *shBuf, uint8_t cmd, uint8_t cmdType, uint16_t len, \
 				 uint8_t rid, uint8_t *info, uint8_t ms)
 {
 	uint16_t numb = 0;
-
+	PacketWrapper *p = NULL;
 	//Send to master:
 	PacketWrapper* p = fm_pool_allocate_block();
 	if (p == NULL)
@@ -193,31 +194,28 @@ void packAndSend(uint8_t *shBuf, uint8_t cmd, uint8_t cmdType, uint16_t len, \
 	p->port = info[0];
 	if(ms == SEND_TO_SLAVE)
 	{
-		/*
-		PacketWrapper* p = fm_pool_allocate_block();
-		if (p == NULL)
-			return;
-		p->port = info[0];
-		*/
-
+		//ToDo ******************
 		pwPackAndSend.port = info[0];
 		memcpy(pwPackAndSend.packed, comm_str_1, numb);
 		flexsea_send_serial_slave(&pwPackAndSend);
 	}
 	else
 	{
-		/*
-		PacketWrapper* p = fm_pool_allocate_block();
-		if (p == NULL)
-			return;
+		switch(info[0])
+		{
+			case PORT_USB:
+				p = &masterOutbound[0];
+				break;
+			case PORT_SPI:
+				p = &masterOutbound[1];
+				break;
+			case PORT_WIRELESS:
+				p = &masterOutbound[2];
+				break;
+		}
 
-		PacketWrapper p;
-		p.port = info[0];	//ToDo might be wrong... enum??
-		*/
-
-		pwPackAndSend.port = info[0];
-		memcpy(pwPackAndSend.packed, comm_str_1, numb);
-		flexsea_send_serial_master(&pwPackAndSend);
+		memcpy(p->packed, comm_str_1, numb);
+		flexsea_send_serial_master(p);
 	}
 }
 
