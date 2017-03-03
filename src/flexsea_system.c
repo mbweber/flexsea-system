@@ -205,6 +205,7 @@ void packAndSend(uint8_t *shBuf, uint8_t cmd, uint8_t cmdType, uint16_t len, \
 		}
 
 		memcpy(p->packed, comm_str_1, numb);
+		p->cmd = (cmdType == CMD_READ) ? CMD_R(cmd) : CMD_W(cmd);
 		flexsea_send_serial_slave(p);
 	}
 	else
@@ -223,6 +224,7 @@ void packAndSend(uint8_t *shBuf, uint8_t cmd, uint8_t cmdType, uint16_t len, \
 		}
 
 		memcpy(p->packed, comm_str_1, numb);
+		p->cmd = (cmdType == CMD_READ) ? CMD_R(cmd) : CMD_W(cmd);
 		flexsea_send_serial_master(p);
 	}
 }
