@@ -39,9 +39,10 @@ extern "C" {
 #include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <stm32f427xx.h>
-#include <core_cm4.h>
+//#include <stm32f427xx.h>	//ToDo remove or isolate with #ifdef
+//#include <core_cm4.h>		//ToDo remove or isolate with #ifdef
 #include <stdio.h>
+
 struct Block {
 	char data[FM_BLOCK_SIZE];
 	struct Block * next;
@@ -56,27 +57,101 @@ void fail(void) {
 	printf("failed\n");
 }
 
-inline bool isInterrupt()
+uint8_t isInterrupt()
 {
-    return (SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk) != 0 ;
+	//return (SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk) != 0 ;	//ToDo remove or isolate with #ifdef
+	return 0;
 }
 
 typedef struct Block Block;
 
 Block memory_pool[FM_NUM_BLOCKS];
 
-#define offsetof(st, m) ((size_t)(&((st *)0)->m))
+#define fm_offsetof(st, m) ((size_t)(&((st *)0)->m))
 
 static Block* get_block(void * raw_block) {
 	uint32_t p =  ((uint32_t) raw_block);
-	if (p & 0x3 != 0)
+	if ((p & 0x3) != 0)
 		fail();
-	size_t offset = offsetof(Block, data);
+	size_t offset = fm_offsetof(Block, data);
 	Block* b = raw_block - offset;
 	return b;
 }
 
 static Block* first;
+
+int getIndexOfBlock(void* b)
+{
+	int i;
+	for(i = 0; i < FM_NUM_BLOCKS; i++)
+	{
+		if(b == &memory_pool[i])
+			return i;
+	}
+	return -1;
+}
+void printUnallocatedBlockList()
+{
+	if(first == NULL)
+	{
+		printf("Block List Empty\n");
+		return;
+	}
+
+	Block* iterator = first;
+	int count = 0;
+	while(iterator && count < 2*FM_NUM_BLOCKS)
+	{
+		printf("%d -> ", getIndexOfBlock(iterator));
+		iterator = iterator->next;
+		count++;
+	}
+	printf("\n");
+	if(count > FM_NUM_BLOCKS)
+	{
+		printf("Circular list detected ,\n");
+	}
+	return;
+}
+
+void printQueue(MsgQueue* q)
+{
+	printf("Printing Queue: \n");
+	if(q == NULL)
+	{
+		printf("Null Queue\n");
+		return;
+	}
+	
+	Block* iterator = (q->tail);
+	printf("  tail -> ");
+	int count = 0;
+	
+	while(iterator && count < 2*FM_NUM_BLOCKS)
+	{
+		printf("%d -> ", getIndexOfBlock(iterator));
+		iterator = iterator->prev;
+		count++;
+	}
+	printf("\n");
+
+	printf("  head -> ");
+	int count2 = 0;
+	iterator = (q->head);
+	while(iterator && count2 < 2*FM_NUM_BLOCKS)
+	{
+		printf("%d -> ", getIndexOfBlock(iterator));
+		iterator = iterator->next;
+		count2++;
+	}
+	printf("\n");
+
+	if(count > FM_NUM_BLOCKS || count2 > FM_NUM_BLOCKS)
+	{
+		printf("Detected circular queue\n");
+	}
+	return;
+}
 
 void fm_pool_init() 
 {
@@ -88,7 +163,6 @@ void fm_pool_init()
 		memory_pool[i].prev = NULL;
 		memory_pool[i].next = &memory_pool[i+1];
 	}
-	i++;
 	memory_pool[i].next = NULL;
 	memory_pool[i].prev = NULL;
 
@@ -121,6 +195,7 @@ void* fm_pool_allocate_block(void)
 	{
 		new_block->next = NULL;
 		new_block->prev = NULL;
+
 		return new_block->data;
 	}
 	return NULL;
@@ -134,11 +209,25 @@ int fm_pool_free_block(void* raw_data) {
 			fail();
 		}
 		Block* block =  get_block(raw_data);
-		ATOMIC_BEGIN();
-		block->next = first;
+		
+		//check if block isn't currently allocated
+		if(block->next != NULL || block->prev != NULL || block == first)
+		{
+			return -1;
+		}
+
+		if(block)
+		{
+			block->next = first;
+		}
+
+		if(first) 
+			first->prev = block;
+		
 		first = block;
 		ATOMIC_END();
 		block->prev = NULL;
+
 		return 0;
 	}
 	return -1;
@@ -181,8 +270,13 @@ int fm_queue_put(MsgQueue* q, void* item) {
 	Block** tail = (Block**)&q->tail;
 
 	Block* block =  get_block(item);
+
+	//check if block has been allocated and is not already in queue
+	if(block->next || block->prev || block == first || block == (Block*)(q->tail) || block == (Block*)(q->head))
+		return -1;
+
 	block->next = *head;
-	if (block  == 0x2609343 ) {
+	if (block  == (Block*)(0x2609343) ) {
 		fail();
 	}
 	if (*head != NULL)
@@ -219,7 +313,7 @@ int fm_queue_put_tail(MsgQueue* q, void * item) {
 
 	Block* block =  get_block(item);
 
-	if ((*tail) == 0x2609343 )
+	if ((*tail) == (Block*)0x2609343 )
 		fail();
 
 	block->prev = *tail;
@@ -245,7 +339,12 @@ void* fm_queue_get(MsgQueue* q ) {
 		fail();
 	}
 
-	ATOMIC_BEGIN();
+	if(q->size < 0)
+	{
+		printf("Q size unexpectely less than 0\n");
+		q->size = 0;
+	}
+
 	if (q->size == 0)
 	{
 		ATOMIC_END();
@@ -258,10 +357,10 @@ void* fm_queue_get(MsgQueue* q ) {
 
 	Block* item = *tail;
 
-	if ((*tail) == 0x2609343 )
+	if ((*tail) == (Block*)0x2609343 )
 		fail();
 
-	if ((*tail)->prev == 0x2609343) {
+	if ((*tail)->prev == (Block*)0x2609343) {
 		fm_queue_init(&slave_queue, 10);
 		fail();
 		return NULL;
@@ -275,7 +374,12 @@ void* fm_queue_get(MsgQueue* q ) {
 	if (q->size == 0)
 		*head = NULL;
 
-	ATOMIC_END();
+	if(item->next)
+		item->next->prev = NULL;
+
+	if(item->prev)
+		item->prev->next = NULL;
+
 	item->prev = NULL;
 	item->next = NULL;
 

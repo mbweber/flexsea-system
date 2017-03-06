@@ -54,6 +54,7 @@ For rx_* functions, the suffix options are:
 #include <flexsea_system.h>
 #include "../flexsea-user/inc/flexsea_cmd_user.h"
 #include <flexsea_comm.h>
+#include <flexsea_payload.h>
 #include "../inc/flexsea_cmd_calibration.h"
 #include "../inc/flexsea_cmd_in_control.h"
 
@@ -67,7 +68,8 @@ uint8_t tmpPayload[PAYLOAD_BUF_LEN];	//tx_N() => tx_cmd()
 uint8_t cmdCode = 0, cmdType = 0;
 uint16_t cmdLen = 0;
 
-MsgQueue packet_queue;
+//MsgQueue packet_queue;
+PacketWrapper pwPackAndSend;
 
 //****************************************************************************
 // Function(s)
@@ -101,10 +103,12 @@ void init_flexsea_payload_ptr(void)
 	//Data:
 	init_flexsea_payload_ptr_data();
 
+	/*
 	//Memory Pool and Message Queues
 	fm_pool_init();
 	fm_queue_init(&packet_queue, 10);
 	fm_queue_init(&unpacked_packet_queue, 10);
+	*/
 
 	//Sensors:
 	init_flexsea_payload_ptr_sensors();
@@ -180,23 +184,35 @@ void packAndSend(uint8_t *shBuf, uint8_t cmd, uint8_t cmdType, uint16_t len, \
 {
 	uint16_t numb = 0;
 
-	//Send to master:
-	PacketWrapper* p = fm_pool_allocate_block();
-	if (p == NULL)
-		return;
-
 	pack(shBuf, cmd, cmdType, len, rid, info, &numb, comm_str_1);
 
-	p->port = info[0];
 	if(ms == SEND_TO_SLAVE)
 	{
-		memcpy(p->packed, comm_str_1, numb);
-		flexsea_send_serial_slave(p);
+		/*
+		PacketWrapper* p = fm_pool_allocate_block();
+		if (p == NULL)
+			return;
+		p->port = info[0];
+		*/
+
+		pwPackAndSend.port = info[0];
+		memcpy(pwPackAndSend.packed, comm_str_1, numb);
+		flexsea_send_serial_slave(&pwPackAndSend);
 	}
 	else
 	{
-		memcpy(p->packed, comm_str_1, numb);
-		flexsea_send_serial_master(p);
+		/*
+		PacketWrapper* p = fm_pool_allocate_block();
+		if (p == NULL)
+			return;
+
+		PacketWrapper p;
+		p.port = info[0];	//ToDo might be wrong... enum??
+		*/
+
+		pwPackAndSend.port = info[0];
+		memcpy(pwPackAndSend.packed, comm_str_1, numb);
+		flexsea_send_serial_master(&pwPackAndSend);
 	}
 }
 
