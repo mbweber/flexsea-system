@@ -48,9 +48,7 @@ For rx_* functions, the suffix options are:
 // Include(s)
 //****************************************************************************
 
-#if (defined BOARD_TYPE_FLEXSEA_MANAGE || defined BOARD_TYPE_FLEXSEA_EXECUTE)
 #include <fm_block_allocator.h>
-#endif
 #include "main.h"
 #include <string.h>
 #include <flexsea_system.h>
@@ -69,12 +67,7 @@ uint8_t tmpPayload[PAYLOAD_BUF_LEN];	//tx_N() => tx_cmd()
 uint8_t cmdCode = 0, cmdType = 0;
 uint16_t cmdLen = 0;
 
-#if (defined BOARD_TYPE_FLEXSEA_MANAGE || defined BOARD_TYPE_FLEXSEA_EXECUTE)
 MsgQueue packet_queue;
-#define FM_ALLOC_BLOCK(p) fm_pool_allocate_block((p))
-#else
-#define FM_ALLOC_BLOCK(p) (PacketWrapper*) malloc(sizeof(PacketWrapper))
-#endif
 
 //****************************************************************************
 // Function(s)
@@ -108,12 +101,10 @@ void init_flexsea_payload_ptr(void)
 	//Data:
 	init_flexsea_payload_ptr_data();
 
-#if (defined BOARD_TYPE_FLEXSEA_MANAGE || defined BOARD_TYPE_FLEXSEA_EXECUTE)
 	//Memory Pool and Message Queues
 	fm_pool_init();
 	fm_queue_init(&packet_queue, 10);
 	fm_queue_init(&unpacked_packet_queue, 10);
-#endif
 
 	//Sensors:
 	init_flexsea_payload_ptr_sensors();
@@ -190,7 +181,7 @@ void packAndSend(uint8_t *shBuf, uint8_t cmd, uint8_t cmdType, uint16_t len, \
 	uint16_t numb = 0;
 
 	//Send to master:
-	PacketWrapper* p = FM_ALLOC_BLOCK();
+	PacketWrapper* p = fm_pool_allocate_block();
 	if (p == NULL)
 		return;
 
