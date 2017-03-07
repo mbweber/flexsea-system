@@ -31,10 +31,12 @@
 extern "C" {
 #endif
 
+#include <stdint.h>
+
 void init_flexsea_payload_ptr_control_stats(void);
 
 void tx_cmd_control_stats_r(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, uint16_t *len, \
-						int slave);
+						uint8_t slave);
 
 void rx_cmd_control_stats_r(uint8_t *buf, uint8_t *info);
 void rx_cmd_control_stats_rr(uint8_t *buf, uint8_t *info);

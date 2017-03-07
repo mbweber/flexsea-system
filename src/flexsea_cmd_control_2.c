@@ -244,12 +244,12 @@ void rx_cmd_ctrl_p_g_w(uint8_t *buf, uint8_t *info)
 	tmp_ki = (int16_t) REBUILD_UINT16(buf, &index);
 	tmp_kd = (int16_t) REBUILD_UINT16(buf, &index);
 
+	#ifdef BOARD_TYPE_FLEXSEA_EXECUTE
+
 	if(tmp_ki && !(ctrl.position.gain.P_KI))
 	{
 		ctrl.position.error_sum = 0;
 	}
-	
-	#ifdef BOARD_TYPE_FLEXSEA_EXECUTE
 
 		//Store value:
 		ctrl.position.gain.P_KP = tmp_kp;

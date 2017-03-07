@@ -57,6 +57,7 @@ For rx_* functions, the suffix options are:
 #include <flexsea_payload.h>
 #include "../inc/flexsea_cmd_calibration.h"
 #include "../inc/flexsea_cmd_in_control.h"
+#include "../inc/flexsea_cmd_control_stats.h"
 
 //****************************************************************************
 // Variable(s)
@@ -99,6 +100,7 @@ void init_flexsea_payload_ptr(void)
     init_flexsea_payload_ptr_control_1();
     init_flexsea_payload_ptr_control_2();
     init_flexsea_payload_ptr_in_control();
+	init_flexsea_payload_ptr_control_stats();
 
 	//Data:
 	init_flexsea_payload_ptr_data();
@@ -183,6 +185,11 @@ void packAndSend(uint8_t *shBuf, uint8_t cmd, uint8_t cmdType, uint16_t len, \
 				 uint8_t rid, uint8_t *info, uint8_t ms)
 {
 	uint16_t numb = 0;
+	PacketWrapper *p = NULL;
+	//Send to master:
+	p = fm_pool_allocate_block();
+	if (p == NULL)
+		return;
 
 	pack(shBuf, cmd, cmdType, len, rid, info, &numb, comm_str_1);
 

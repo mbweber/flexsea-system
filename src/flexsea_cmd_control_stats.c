@@ -35,10 +35,17 @@ extern "C" {
 #ifdef BOARD_TYPE_FLEXSEA_EXECUTE
 #include "control.h"
 #endif
+
 #ifdef BOARD_TYPE_FLEXSEA_PLAN
-#include <QDebug>
+//#include <QDebug>
 #endif
 
+void init_flexsea_payload_ptr_control_stats(void)
+{
+
+	flexsea_payload_ptr[CMD_CONTROL_STATS][RX_PTYPE_READ] = &rx_cmd_control_stats_r;
+	flexsea_payload_ptr[CMD_CONTROL_STATS][RX_PTYPE_REPLY] = &rx_cmd_control_stats_rr;
+}
 
 void tx_cmd_control_stats_r(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, uint16_t *len, \
 						uint8_t slave)
@@ -102,7 +109,8 @@ void rx_cmd_control_stats_rr(uint8_t *buf, uint8_t *info)
 	#elif(defined BOARD_TYPE_FLEXSEA_PLAN)
 
 		//do smthng
-		qDebug() << "Received control stats."
+
+	//qDebug() << "Received control stats.";
 	
 	#endif
 }
