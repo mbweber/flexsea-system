@@ -77,3 +77,34 @@ void initializeGlobalStructs()
     exec1.enc_ang_vel = &(as5047.signed_ang_vel);
 #endif
 }
+
+void init_diffarr(struct diffarr_s * das)
+{
+   static int jj;
+   for (jj=0;jj<50;jj++)
+    {
+        das->vals[jj] = 0;
+    }
+    das->indx = 0;
+    das->curval = 0;
+    das->curdif = 0;
+}
+
+void update_diffarr(struct diffarr_s * das, int32_t cvl, int32_t difflen)
+{
+    das->curval = cvl;
+    das->vals[(das->indx+1)%50] = das->curval;
+    das->indx = (das->indx+1)%50;
+    das->curdif = das->vals[das->indx]-das->vals[(das->indx-difflen+50)%50]; 
+}
+
+int32_t get_diffarr(struct diffarr_s * das, int32_t difflen)
+{
+    
+    return das->vals[das->indx]-das->vals[(das->indx-difflen+50)%50]; 
+}
+
+int32_t get_diffarr_elmnt(struct diffarr_s * das, int32_t indx)
+{
+    return das->vals[(das->indx-indx+50)%50]; 
+}
