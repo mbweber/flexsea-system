@@ -55,6 +55,24 @@ version has multiple data types, and is used by the different boards.
 It includes a sub-structure named decoded_X that contains decoded values
 (physical units, not ticks). The decoded values are always int32*/
 
+
+struct exodata_s
+{
+    int8_t state;
+    uint32_t time;
+    int16_t shank_angvel;
+    int16_t ankle_ang;
+    int16_t ankle_vel;
+    int16_t ankle_mom;
+    int16_t mot_curr;
+    int16_t mot_volt;
+    uint8_t bat_volt;
+    int16_t peak_des_mom;
+    int16_t max_PF_power;
+    int16_t des_mom;
+    int16_t pwm;
+};
+
 //Gains
 struct gains_s
 {
