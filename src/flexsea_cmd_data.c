@@ -129,12 +129,12 @@ void tx_cmd_data_read_all_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 	#ifdef BOARD_TYPE_FLEXSEA_EXECUTE
 
 	#ifdef USE_IMU
-		SPLIT_16((uint16_t)imu.gyro.x, shBuf, &index);
-		SPLIT_16((uint16_t)imu.gyro.y, shBuf, &index);
-		SPLIT_16((uint16_t)imu.gyro.z, shBuf, &index);
-		SPLIT_16((uint16_t)imu.accel.x, shBuf, &index);
-		SPLIT_16((uint16_t)imu.accel.y, shBuf, &index);
-		SPLIT_16((uint16_t)imu.accel.z, shBuf, &index);
+		SPLIT_16((uint16_t)exo.state, shBuf, &index);
+		SPLIT_16((uint16_t)exo.des_mom, shBuf, &index);
+		SPLIT_16((uint16_t)exo.mot_volt, shBuf, &index);
+		SPLIT_16((uint16_t)exo.pwm, shBuf, &index);
+		SPLIT_16((uint16_t)exo.max_PF_power, shBuf, &index);
+		SPLIT_16((uint16_t)exo.ankle_mom, shBuf, &index);
 	#else
 		SPLIT_16((uint16_t)0, shBuf, &index);
 		SPLIT_16((uint16_t)0, shBuf, &index);
@@ -145,8 +145,8 @@ void tx_cmd_data_read_all_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 	#endif
 
 	SPLIT_16(strain_read(), shBuf, &index);
-	SPLIT_16(read_analog(0), shBuf, &index);
-	SPLIT_16(read_analog(1), shBuf, &index);
+	SPLIT_16((int16_t)exo.ankle_ang, shBuf, &index);
+	SPLIT_16((int16_t)exo.ankle_vel, shBuf, &index);
 
 	SPLIT_32((uint32_t)(*exec1.enc_ang), shBuf, &index);
 	SPLIT_32((uint32_t)ctrl.current.actual_val, shBuf, &index);
