@@ -145,8 +145,8 @@ void tx_cmd_data_read_all_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 	#endif
 
 	SPLIT_16(strain_read(), shBuf, &index);
-	SPLIT_16((int16_t)exo.ankle_ang, shBuf, &index);
-	SPLIT_16((int16_t)exo.ankle_vel, shBuf, &index);
+	SPLIT_16(exo.ankle_ang, shBuf, &index);
+	SPLIT_16(exo.ankle_vel, shBuf, &index);
 
 	SPLIT_32((uint32_t)(*exec1.enc_ang), shBuf, &index);
 	SPLIT_32((uint32_t)ctrl.current.actual_val, shBuf, &index);
